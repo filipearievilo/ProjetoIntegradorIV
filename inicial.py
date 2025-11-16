@@ -164,7 +164,16 @@ fig_faixa.update_traces(
 )
 
 # --- Exibir os gráficos ---
-st.title("Análise ENEM 2023")
+st.markdown(
+    """
+    <div style='text-align: center;'>
+        <h1>A ESCOLA CONTA?</h1>
+        <h4>ANÁLISE DE NOTAS DO ENEM 2023</h4>
+        <h4>ANÁLISE DE DADOS E MACHINE LEARNING NA INVESTIGAÇÃO DO DESEMPENHO EDUCACIONAL</h4>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 col1, col2, col3 = st.columns(3)
 with col1:
@@ -246,18 +255,20 @@ fig_linha_faixa.update_layout(
 # Exibir o gráfico
 st.plotly_chart(fig_linha_faixa, width='stretch')
 
-# --- Gráfico de dispersão: Tipo de Escola vs Média das Provas ---
-fig_disp_escola_media = px.strip(
+# --- Gráfico violino: Distribuição da Média das Provas por Tipo de Escola ---
+fig_violino = px.violin(
     df,
     x='TP_ESCOLA',
     y='MEDIA_NOTAS',
-    title='Distribuição da Média das Provas por Tipo de Escola',
+    box=True,  # Adiciona boxplot dentro do violino
+    points='all',  # Mostra todos os pontos individuais
     color='TP_ESCOLA',
     color_discrete_sequence=PALETA_CORES,
+    title='Distribuição da Média das Provas por Tipo de Escola (Gráfico Violino)',
     labels={'TP_ESCOLA': 'Tipo de Escola', 'MEDIA_NOTAS': 'Média das Notas'}
 )
 
-fig_disp_escola_media.update_traces(jitter=0.3, marker=dict(size=5, opacity=0.6))
-fig_disp_escola_media.update_layout(xaxis_title='Tipo de Escola', yaxis_title='Média das Notas')
+fig_violino.update_traces(meanline_visible=True, jitter=0.3, marker=dict(size=3, opacity=0.5))
+fig_violino.update_layout(xaxis_title='Tipo de Escola', yaxis_title='Média das Notas')
 
-st.plotly_chart(fig_disp_escola_media, use_container_width=True)
+st.plotly_chart(fig_violino, use_container_width=True)
