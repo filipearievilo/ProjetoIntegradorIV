@@ -1,6 +1,7 @@
 import pandas as pd
 import streamlit as st
 import plotly.express as px
+from sklearn.cluster import KMeans
 
 PALETA_CORES = [
     '#003366',  # Azul marinho profundo
@@ -67,6 +68,10 @@ def carregar_dados():
     df['MEDIA_NOTAS'] = df[
         ['NU_NOTA_MT', 'NU_NOTA_CN', 'NU_NOTA_CH', 'NU_NOTA_LC', 'NU_NOTA_REDACAO']
     ].mean(axis=1)
+
+    # --- Aplicar K-Means para clusterizar alunos por média de notas ---
+    kmeans = KMeans(n_clusters=3, random_state=42)
+    df['CLUSTER'] = kmeans.fit_predict(df[['MEDIA_NOTAS']])
 
     return df
 
@@ -163,11 +168,11 @@ st.title("Análise ENEM 2023")
 
 col1, col2, col3 = st.columns(3)
 with col1:
-    st.plotly_chart(fig_sexo, use_container_width=True)
+    st.plotly_chart(fig_sexo, width='stretch')
 with col2:
-    st.plotly_chart(fig_escola, use_container_width=True)
+    st.plotly_chart(fig_escola, width='stretch')
 with col3:
-    st.plotly_chart(fig_dependencia, use_container_width=True)
+    st.plotly_chart(fig_dependencia, width='stretch')
 
 # --- Gráfico de Médias por Disciplina e Tipo de Escola + Média Geral ---
 disciplinas = ['NU_NOTA_MT', 'NU_NOTA_CN', 'NU_NOTA_CH', 'NU_NOTA_LC', 'NU_NOTA_REDACAO']
@@ -212,7 +217,7 @@ fig_disciplinas = px.bar(
 fig_disciplinas.update_layout(xaxis_title='Disciplina', yaxis_title='Média das Notas')
 
 # Exibir o gráfico
-st.plotly_chart(fig_disciplinas, use_container_width=True)
+st.plotly_chart(fig_disciplinas, width='stretch')
 
 # --- Gráfico de Linha Curva por Faixa Etária ---
 faixa_counts = df_filtrado['TP_FAIXA_ETARIA'].value_counts().sort_index().reset_index()
@@ -239,4 +244,20 @@ fig_linha_faixa.update_layout(
 )
 
 # Exibir o gráfico
-st.plotly_chart(fig_linha_faixa, use_container_width=True)
+st.plotly_chart(fig_linha_faixa, width='stretch')
+
+# --- Gráfico de dispersão: Tipo de Escola vs Média das Provas ---
+fig_disp_escola_media = px.strip(
+    df,
+    x='TP_ESCOLA',
+    y='MEDIA_NOTAS',
+    title='Distribuição da Média das Provas por Tipo de Escola',
+    color='TP_ESCOLA',
+    color_discrete_sequence=PALETA_CORES,
+    labels={'TP_ESCOLA': 'Tipo de Escola', 'MEDIA_NOTAS': 'Média das Notas'}
+)
+
+fig_disp_escola_media.update_traces(jitter=0.3, marker=dict(size=5, opacity=0.6))
+fig_disp_escola_media.update_layout(xaxis_title='Tipo de Escola', yaxis_title='Média das Notas')
+
+st.plotly_chart(fig_disp_escola_media, use_container_width=True)
